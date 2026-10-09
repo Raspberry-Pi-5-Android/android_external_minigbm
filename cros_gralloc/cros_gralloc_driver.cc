@@ -108,8 +108,20 @@ static struct driver *init_try_node(int idx, char const *str)
 		return NULL;
 
 	drv = drv_create(fd);
-	if (!drv)
+	if (!drv) {
 		close(fd);
+		return NULL;
+	}
+
+	/*
+	 * Opening a primary (card) node implicitly makes this process DRM master
+	 * if no master exists yet. The allocator never needs master (e.g. dumb
+	 * buffer creation does not require it), and holding it blocks the
+	 * composer (e.g. drm_hwcomposer) from modesetting. Drop it, as
+	 * minigbm_helpers.c does for the same reason.
+	 */
+	if (drmGetNodeTypeFromFd(fd) == DRM_NODE_PRIMARY && drmIsMaster(fd))
+		drmDropMaster(fd);
 
 	return drv;
 }
