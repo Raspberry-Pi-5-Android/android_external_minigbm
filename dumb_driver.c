@@ -75,6 +75,12 @@ INIT_DUMB_DRIVER(synaptics)
 INIT_DUMB_DRIVER(udl)
 INIT_DUMB_DRIVER(vkms)
 
+/* BCM2711/BCM2712 (Raspberry Pi 4/5): vc4 is KMS-only and rejects VC4 BO ioctls
+ * (-ENODEV on gen > VC4_GEN_4), so allocate scanout/CPU buffers as dumb buffers. */
+#ifndef DRV_VC4
+INIT_DUMB_DRIVER_WITH_NAME(vc4_dumb, "vc4")
+#endif
+
 #ifndef DRV_ROCKCHIP
 INIT_DUMB_DRIVER(rockchip)
 #endif
